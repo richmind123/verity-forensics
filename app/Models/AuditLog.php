@@ -11,32 +11,32 @@ class AuditLog extends Model
 
     protected $casts = [
         'severity' => Severity::class,
-        'payload'  => 'array',
+        'payload' => 'array',
     ];
 
     public static function timelineData(): array
-{
-    $rows = self::selectRaw('DATE(created_at) as date, severity, COUNT(*) as count')
-        ->groupBy('date', 'severity')
-        ->orderBy('date')
-        ->get();
+    {
+        $rows = self::selectRaw('DATE(created_at) as date, severity, COUNT(*) as count')
+            ->groupBy('date', 'severity')
+            ->orderBy('date')
+            ->get();
 
-    $labels = $rows->pluck('date')->unique()->sort()->values()->all();
+        $labels = $rows->pluck('date')->unique()->sort()->values()->all();
 
-    $severities = ['info', 'warning', 'critical', 'fatal'];
+        $severities = ['info', 'warning', 'critical', 'fatal'];
 
-    $datasets = [];
-    foreach ($severities as $severity) {
-        $datasets[$severity] = [];
-        foreach ($labels as $date) {
-            $match = $rows->first(fn ($row) => $row->date === $date && $row->severity->value === $severity);
-            $datasets[$severity][] = $match ? $match->count : 0;
+        $datasets = [];
+        foreach ($severities as $severity) {
+            $datasets[$severity] = [];
+            foreach ($labels as $date) {
+                $match = $rows->first(fn ($row) => $row->date === $date && $row->severity->value === $severity);
+                $datasets[$severity][] = $match ? $match->count : 0;
+            }
         }
-    }
 
-    return [
-        'labels' => $labels,
-        'datasets' => $datasets,
-    ];
-}
+        return [
+            'labels' => $labels,
+            'datasets' => $datasets,
+        ];
+    }
 }

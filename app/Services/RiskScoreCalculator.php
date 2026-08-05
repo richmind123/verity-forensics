@@ -56,8 +56,8 @@ class RiskScoreCalculator
                 'has_elevated_severity' => $hasElevatedSeverity,
             ];
         })
-        ->sortByDesc('score')
-        ->values();
+            ->sortByDesc('score')
+            ->values();
     }
 
     private static function hasSuspiciousUserAgent(AuditLog $log): bool

@@ -13,9 +13,7 @@ class ProcessEvidenceFileJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public string $filePath)
-    {
-    }
+    public function __construct(public string $filePath) {}
 
     public function handle(): void
     {
