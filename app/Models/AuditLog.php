@@ -5,6 +5,10 @@ namespace App\Models;
 use App\Enums\Severity;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property-read string $date
+ * @property-read int $count
+ */
 class AuditLog extends Model
 {
     protected $fillable = ['event', 'ip_address', 'severity', 'payload', 'created_at', 'updated_at'];
@@ -14,6 +18,9 @@ class AuditLog extends Model
         'payload' => 'array',
     ];
 
+    /**
+     * @return array{labels: array<int, string>, datasets: array<string, array<int, int>>}
+     */
     public static function timelineData(): array
     {
         $rows = self::selectRaw('DATE(created_at) as date, severity, COUNT(*) as count')

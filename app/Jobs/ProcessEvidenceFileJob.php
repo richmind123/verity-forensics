@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use RuntimeException;
 
 class ProcessEvidenceFileJob implements ShouldQueue
 {
@@ -24,7 +25,17 @@ class ProcessEvidenceFileJob implements ShouldQueue
     {
         $handle = fopen($this->filePath, 'r');
 
+        if ($handle === false) {
+            throw new RuntimeException("Unable to open evidence file: {$this->filePath}");
+        }
+
         $header = fgetcsv($handle, escape: '');
+
+        if ($header === false) {
+            throw new RuntimeException("Evidence file is empty or unreadable: {$this->filePath}");
+        }
+
+        $header = array_map('strval', $header);
 
         $rowCount = 0;
 

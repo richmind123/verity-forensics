@@ -10,6 +10,8 @@ class BruteForceDetector
     /**
      * Returns IPs with more than $threshold failed login attempts
      * within any 5-minute window.
+     *
+     * @return Collection<int, AuditLog>
      */
     public static function detect(int $threshold = 50): Collection
     {

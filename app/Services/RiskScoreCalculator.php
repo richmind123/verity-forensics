@@ -17,6 +17,8 @@ class RiskScoreCalculator
     /**
      * Calculates a risk score (0-100) for every IP that has at
      * least one File Download event, based on correlated signals.
+     *
+     * @return Collection<int, RiskScore>
      */
     public static function calculate(): Collection
     {
@@ -25,6 +27,8 @@ class RiskScoreCalculator
             ->pluck('ip_address');
 
         return $ips->map(function ($ip) {
+            $ip = (string) $ip;
+
             $logsForIp = AuditLog::where('ip_address', $ip)->get();
 
             $downloads = $logsForIp->where('event', 'File Download');
@@ -32,15 +36,12 @@ class RiskScoreCalculator
 
             $score = 0;
 
-            // Signal 1: suspicious User-Agent on downloads (heaviest weight)
             if ($suspiciousDownloads->isNotEmpty()) {
                 $score += 50;
             }
 
-            // Signal 2: volume of downloads (capped contribution)
             $score += min($downloads->count() * 5, 20);
 
-            // Signal 3: any critical/fatal severity events from this IP
             $hasElevatedSeverity = $logsForIp->contains(
                 fn ($log) => in_array($log->severity->value, ['critical', 'fatal'])
             );
@@ -48,13 +49,13 @@ class RiskScoreCalculator
                 $score += 30;
             }
 
-            return (object) [
-                'ip_address' => $ip,
-                'score' => min($score, 100),
-                'download_count' => $downloads->count(),
-                'suspicious_download_count' => $suspiciousDownloads->count(),
-                'has_elevated_severity' => $hasElevatedSeverity,
-            ];
+            return new RiskScore(
+                ip_address: $ip,
+                score: min($score, 100),
+                download_count: $downloads->count(),
+                suspicious_download_count: $suspiciousDownloads->count(),
+                has_elevated_severity: $hasElevatedSeverity,
+            );
         })
             ->sortByDesc('score')
             ->values();
@@ -65,15 +66,15 @@ class RiskScoreCalculator
         $browser = $log->payload['browser'] ?? null;
 
         if (! $browser) {
-            return false; // no browser info at all — not enough signal alone
+            return false;
         }
 
         foreach (self::KNOWN_BROWSERS as $known) {
             if (str_contains($browser, $known)) {
-                return false; // matches a known real browser
+                return false;
             }
         }
 
-        return true; // doesn't match any known browser signature
+        return true;
     }
 }
