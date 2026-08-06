@@ -13,7 +13,7 @@ new class extends Component {
 };
 ?>
 
-<div>
+<div class="h-[400px] w-full">
     <canvas id="timelineChart" wire:ignore></canvas>
 </div>
 
@@ -23,7 +23,11 @@ new class extends Component {
 
     const ctx = document.getElementById('timelineChart');
 
-    new Chart(ctx, {
+    if (ctx.chart) {
+        ctx.chart.destroy();
+    }
+
+    ctx.chart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: data.labels,
@@ -52,6 +56,7 @@ new class extends Component {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 x: { stacked: true },
                 y: { stacked: true },
