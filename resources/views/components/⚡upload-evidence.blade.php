@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\ProcessEvidenceFileJob;
+use App\Models\EvidenceUpload;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -21,9 +22,20 @@ new class extends Component {
             'file' => 'required|mimes:csv,txt|max:51200',
         ]);
 
+        $hash = hash_file('sha256', $this->file->getRealPath());
+
+        if (EvidenceUpload::where('file_hash', $hash)->exists()) {
+            $this->addError('file', 'This file has already been processed.');
+            return;
+        }
+
         $path = $this->file->store('samples');
 
-        ProcessEvidenceFileJob::dispatch(Storage::path($path));
+        ProcessEvidenceFileJob::dispatch(
+            Storage::path($path),
+            $hash,
+            $this->file->getClientOriginalName()
+        );
 
         session()->flash('message', 'File uploaded — processing in the background.');
 
@@ -69,8 +81,8 @@ new class extends Component {
     }
 };
 
-
 ?>
+
 
 <div>
     <form wire:submit="save">
