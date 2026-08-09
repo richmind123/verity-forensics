@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Severity;
+use App\Models\Concerns\BelongsToCurrentUser;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -11,7 +12,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class AuditLog extends Model
 {
-    protected $fillable = ['event', 'ip_address', 'severity', 'payload', 'created_at', 'updated_at'];
+    use BelongsToCurrentUser;
+
+    protected $fillable = ['user_id', 'event', 'ip_address', 'severity', 'payload', 'created_at', 'updated_at'];
 
     protected $casts = [
         'severity' => Severity::class,
@@ -36,7 +39,7 @@ class AuditLog extends Model
         foreach ($severities as $severity) {
             $datasets[$severity] = [];
             foreach ($labels as $date) {
-                $match = $rows->first(fn ($row) => $row->date === $date && $row->severity->value === $severity);
+                $match = $rows->first(fn($row) => $row->date === $date && $row->severity->value === $severity);
                 $datasets[$severity][] = $match ? $match->count : 0;
             }
         }

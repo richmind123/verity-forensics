@@ -34,7 +34,8 @@ new class extends Component {
         ProcessEvidenceFileJob::dispatch(
             Storage::path($path),
             $hash,
-            $this->file->getClientOriginalName()
+            $this->file->getClientOriginalName(),
+            auth()->id()
         );
 
         session()->flash('message', 'File uploaded — processing in the background.');
@@ -43,42 +44,42 @@ new class extends Component {
     }
 
 
-    public function getTimelineData(): array
-    {
-        $raw = \App\Models\AuditLog::selectRaw('DATE(created_at) as date, severity, COUNT(*) as count')
-            ->groupBy('date', 'severity')
-            ->orderBy('date')
-            ->get();
+    // public function getTimelineData(): array
+    // {
+    //     $raw = \App\Models\AuditLog::selectRaw('DATE(created_at) as date, severity, COUNT(*) as count')
+    //         ->groupBy('date', 'severity')
+    //         ->orderBy('date')
+    //         ->get();
 
-        $dates = $raw->pluck('date')->unique()->sort()->values();
-        $severities = ['info', 'warning', 'critical', 'fatal'];
+    //     $dates = $raw->pluck('date')->unique()->sort()->values();
+    //     $severities = ['info', 'warning', 'critical', 'fatal'];
 
-        $colors = [
-            'info' => '#9CA3AF',
-            'warning' => '#FACC15',
-            'critical' => '#FB923C',
-            'fatal' => '#EF4444',
-        ];
+    //     $colors = [
+    //         'info' => '#9CA3AF',
+    //         'warning' => '#FACC15',
+    //         'critical' => '#FB923C',
+    //         'fatal' => '#EF4444',
+    //     ];
 
-        $datasets = [];
-        foreach ($severities as $severity) {
-            $data = $dates->map(function ($date) use ($raw, $severity) {
-                $match = $raw->first(fn($row) => $row->date === $date && $row->severity === $severity);
-                return $match ? $match->count : 0;
-            });
+    //     $datasets = [];
+    //     foreach ($severities as $severity) {
+    //         $data = $dates->map(function ($date) use ($raw, $severity) {
+    //             $match = $raw->first(fn($row) => $row->date === $date && $row->severity === $severity);
+    //             return $match ? $match->count : 0;
+    //         });
 
-            $datasets[] = [
-                'label' => ucfirst($severity),
-                'data' => $data->values(),
-                'backgroundColor' => $colors[$severity],
-            ];
-        }
+    //         $datasets[] = [
+    //             'label' => ucfirst($severity),
+    //             'data' => $data->values(),
+    //             'backgroundColor' => $colors[$severity],
+    //         ];
+    //     }
 
-        return [
-            'labels' => $dates->values(),
-            'datasets' => $datasets,
-        ];
-    }
+    //     return [
+    //         'labels' => $dates->values(),
+    //         'datasets' => $datasets,
+    //     ];
+    // }
 };
 
 ?>
@@ -86,24 +87,30 @@ new class extends Component {
 
 <div>
     <form wire:submit="save">
-        <label class="block text-sm font-medium mb-1">Evidence CSV</label>
+        <label class="block text-xs font-medium mb-2 uppercase tracking-wide text-verity-muted">Evidence CSV</label>
 
         <div x-data="{ isDragging: false, uploadProgress: 0 }" x-on:livewire-upload-start="uploadProgress = 0" x-on:livewire-upload-finish="uploadProgress = 100" x-on:livewire-upload-cancel="uploadProgress = 0" x-on:livewire-upload-error="uploadProgress = 0" x-on:livewire-upload-progress="uploadProgress = $event.detail.progress" x-on:dragover.prevent="isDragging = true" x-on:dragleave.prevent="isDragging = false" x-on:drop.prevent="
                 isDragging = false;
                 if ($event.dataTransfer.files.length > 0) {
                     $wire.upload('file', $event.dataTransfer.files[0]);
                 }
-            " x-on:click="$refs.fileInput.click()" :class="isDragging ? 'border-blue-500 bg-blue-500/10' : 'border-gray-600'" class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors">
+            " x-on:click="$refs.fileInput.click()" :class="isDragging ? 'border-accent bg-accent/10' : 'border-verity-border'" class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors flex flex-col items-center gap-2">
             <input type="file" wire:model="file" accept=".csv" x-ref="fileInput" class="hidden">
+
+            <div class="w-11 h-11 rounded-lg bg-accent flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-accent-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12" />
+                </svg>
+            </div>
 
             <p class="text-sm text-gray-400">
                 Drag and drop your CSV here, or click to browse
             </p>
 
             <template x-if="uploadProgress > 0 && uploadProgress < 100">
-                <div class="mt-4">
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-blue-500 h-2 rounded-full transition-all" :style="`width: ${uploadProgress}%`"></div>
+                <div class="w-full mt-1">
+                    <div class="w-full bg-verity-border rounded-full h-2">
+                        <div class="bg-accent h-2 rounded-full transition-all" :style="`width: ${uploadProgress}%`"></div>
                     </div>
                     <p class="text-xs text-gray-400 mt-1" x-text="`${uploadProgress}%`"></p>
                 </div>

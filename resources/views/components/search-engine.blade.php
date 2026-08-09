@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\AuditLog;
+use App\Models\EvidenceUpload;
 use App\Services\BruteForceDetector;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -65,17 +66,30 @@ new class extends Component {
 
         $riskScores = RiskScoreCalculator::calculate()->take(5);
 
+        $uploadHistory = EvidenceUpload::query()
+            ->orderByDesc('created_at')
+            ->take(10)
+            ->get();
+
         return [
             'logs' => $logs,
             'selectedLog' => $selectedLog,
             'bruteForceFlags' => $bruteForceFlags,
             'riskScores' => $riskScores,
+            'uploadHistory' => $uploadHistory,
         ];
     }
 };
 ?>
 
 <div>
+    <div class="flex items-center justify-between mb-4 pb-3 border-b border-verity-border">
+        <span class="text-xs uppercase tracking-wide text-verity-muted">Dashboard</span>
+        <span class="inline-block px-3 py-1 text-xs uppercase tracking-wide border rounded-full text-accent border-accent/30 bg-accent/10">
+            {{ number_format($logs->total()) }} events processed
+        </span>
+    </div>
+
     @if ($bruteForceFlags->isNotEmpty())
         <div class="mb-4 p-3 bg-red-900/30 border border-red-700 rounded-lg">
             <p class="text-red-400 font-medium text-sm">⚠ Brute Force Activity Detected</p>
@@ -90,23 +104,41 @@ new class extends Component {
     @endif
 
     @if ($riskScores->isNotEmpty())
-        <div class="mb-4 p-3 bg-gray-800/50 border border-gray-700 rounded-lg">
-            <p class="font-medium text-sm mb-2">Top Risk Scores</p>
+        <div class="mb-4 p-4 bg-verity-panel border border-verity-border rounded-lg">
+            <p class="text-xs uppercase tracking-wide text-verity-muted mb-3">Top Risk Scores</p>
             <div class="space-y-1">
                 @foreach ($riskScores as $risk)
-                    <button wire:click="$set('ipAddress', '{{ $risk->ip_address }}')" class="w-full flex justify-between items-center text-sm hover:bg-white/5 px-2 py-1 rounded">
+                    <button wire:click="$set('ipAddress', '{{ $risk->ip_address }}')" class="w-full flex justify-between items-center text-sm hover:bg-white/5 px-2 py-1.5 rounded">
                         <span>{{ $risk->ip_address }}</span>
-                        <span class="flex items-center gap-2">
-                            <span class="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
-                                <span class="h-full block {{ $risk->score >= 80 ? 'bg-red-500' : ($risk->score >= 50 ? 'bg-orange-500' : 'bg-gray-500') }}" style="width: {{ $risk->score }}%"></span>
+                        <span class="flex items-center gap-3">
+                            <span class="w-24 h-1.5 bg-verity-border rounded-full overflow-hidden">
+                                <span class="h-full block {{ $risk->score >= 80 ? 'bg-verity-fatal' : ($risk->score >= 50 ? 'bg-verity-alert' : 'bg-verity-muted-2') }}" style="width: {{ $risk->score }}%"></span>
                             </span>
-                            <span class="w-8 text-right">{{ $risk->score }}</span>
+                            <span class="w-8 text-right tabular-nums">{{ $risk->score }}</span>
                         </span>
                     </button>
                 @endforeach
             </div>
         </div>
     @endif
+
+    @if ($uploadHistory->isNotEmpty())
+        <div class="mb-4 p-4 bg-verity-panel border border-verity-border rounded-lg">
+            <p class="text-xs uppercase tracking-wide text-verity-muted mb-3">Upload History</p>
+            <div class="space-y-2">
+                @foreach ($uploadHistory as $upload)
+                    <div class="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4 text-sm px-2 py-1.5 rounded">
+                        <span class="truncate">{{ $upload->filename }}</span>
+                        <span class="flex items-center gap-4 text-verity-muted shrink-0">
+                            <span class="tabular-nums">{{ number_format($upload->row_count) }} rows</span>
+                            <span>{{ $upload->created_at->diffForHumans() }}</span>
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="flex flex-wrap gap-4 items-end mb-4">
         <div>
             <label class="block text-sm font-medium mb-1">IP Address</label>
@@ -153,7 +185,7 @@ new class extends Component {
                     <td class="p-2">{{ $log->created_at }}</td>
                     <td class="p-2">{{ $log->event }}</td>
                     <td class="p-2">{{ $log->ip_address }}</td>
-                    <td class="p-2">{{ $log->severity->value }}</td>
+                    <td class="p-2"><x-severity-badge :severity="$log->severity->value" /></td>
                 </tr>
             @empty
                 <tr>
@@ -193,7 +225,7 @@ new class extends Component {
                 </div>
                 <div>
                     <span class="text-gray-400">Severity</span>
-                    <p>{{ $selectedLog->severity->value }}</p>
+                    <p><x-severity-badge :severity="$selectedLog->severity->value" /></p>
                 </div>
 
                 <div>

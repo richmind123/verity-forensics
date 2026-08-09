@@ -21,6 +21,14 @@ new class extends Component {
 <script>
     const data = @json($timelineData);
 
+    const styles = getComputedStyle(document.documentElement);
+    const colors = {
+        info: styles.getPropertyValue('--color-verity-muted').trim(),
+        warning: styles.getPropertyValue('--color-verity-alert').trim(),
+        critical: styles.getPropertyValue('--color-verity-critical').trim(),
+        fatal: styles.getPropertyValue('--color-verity-fatal').trim(),
+    };
+
     const ctx = document.getElementById('timelineChart');
 
     if (ctx.chart) {
@@ -35,22 +43,22 @@ new class extends Component {
                 {
                     label: 'Info',
                     data: data.datasets.info,
-                    backgroundColor: '#6b7280',
+                    backgroundColor: colors.info,
                 },
                 {
                     label: 'Warning',
                     data: data.datasets.warning,
-                    backgroundColor: '#f59e0b',
+                    backgroundColor: colors.warning,
                 },
                 {
                     label: 'Critical',
                     data: data.datasets.critical,
-                    backgroundColor: '#ea580c',
+                    backgroundColor: colors.critical,
                 },
                 {
                     label: 'Fatal',
                     data: data.datasets.fatal,
-                    backgroundColor: '#dc2626',
+                    backgroundColor: colors.fatal,
                 },
             ],
         },

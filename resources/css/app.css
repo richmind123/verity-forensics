@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -16,19 +17,20 @@
     --color-verity-signal: #4ee2c9;
     --color-verity-signal-dim: #2a5a53;
     --color-verity-alert: #e8935a;
-    --color-verity-critical: #e2593f;
+    --color-verity-critical: #e2793f;
     --color-verity-fatal: #e2453f;
     --color-verity-muted: #7c8890;
     --color-verity-muted-2: #4d5860;
 
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-sans: var(--font-mono);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent: var(--color-verity-signal);
+        --color-accent-content: var(--color-verity-signal);
+        --color-accent-foreground: var(--color-verity-bg);
     }
 }
 

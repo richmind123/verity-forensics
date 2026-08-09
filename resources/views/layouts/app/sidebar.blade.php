@@ -22,27 +22,20 @@
 
         <flux:spacer />
 
-        <flux:sidebar.nav>
-            <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-            </flux:sidebar.item>
 
-            <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                {{ __('Documentation') }}
-            </flux:sidebar.item>
-        </flux:sidebar.nav>
 
         <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
     </flux:sidebar>
 
+
     <!-- Mobile User Menu -->
-    <flux:header class="lg:hidden">
-        <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+    <flux:header class="border-b border-verity-border lg:hidden">
+        <flux:sidebar.toggle class="lg:hidden text-verity-muted hover:bg-accent/10 hover:text-accent" icon="bars-2" inset="left" />
 
         <flux:spacer />
 
         <flux:dropdown position="top" align="end">
-            <flux:profile :initials="auth()->user()->initials()" icon-trailing="chevron-down" />
+            <flux:profile :initials="auth()->user()->initials()" icon-trailing="chevron-down" class="text-verity-muted hover:bg-accent/10 hover:text-accent" />
 
             <flux:menu>
                 <flux:menu.radio.group>

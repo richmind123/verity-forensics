@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCurrentUser;
 use Illuminate\Database\Eloquent\Model;
 
 class EvidenceUpload extends Model
 {
-    protected $fillable = ['filename', 'file_hash', 'row_count'];
+    use BelongsToCurrentUser;
+
+    protected $fillable = ['user_id', 'filename', 'file_hash', 'row_count'];
 }
